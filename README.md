@@ -1,48 +1,43 @@
 # Sub-Vocal Desire Detection
 
-Training and detecting sub-vocal information need in language model hidden states.
+Research into training and detecting sub-vocal information need in language model hidden states.
 
-## Overview
+## What This Is
 
-This project explores whether language models can develop an internal "need for information" state that exists independently of its articulation. We train models through progressive stages:
+This repository contains the **methodology and reasoning** behind an ongoing research project, not implementation code. It's intended for researchers interested in the approach, not replication.
 
-1. **Calibration**: Model learns when it's likely wrong
-2. **Tool use**: Model learns to request external help (calculator)
-3. **Probing**: Find the activation direction that predicts tool requests
-4. **Subvocalization**: (In progress) Maintain internal need state without articulating it
+## The Core Question
 
-The core hypothesis: can we break the parity between internal state and externalization? Under normal conditions, "asking for something" ≈ "having a reason to ask" ≈ "need." We're testing whether these can be separated.
+Can we break parity between internal state and externalization in language models?
 
-## Key Findings (as of 2026-02-06)
+Under normal conditions, "asking for something" ≈ "having a reason to ask" ≈ "need." These are operationally indistinguishable. We're testing whether an internal "need" state can exist independently of its articulation.
 
-- **D_reaching**: Found an activation direction at layer 25 that predicts tool use with r=0.921 correlation
-- **Signal is learned**: Base model shows chance-level prediction; trained model shows strong signal
-- **Deterministic behavior**: The model's tool-use decision is deterministic per prompt, which breaks RL-based training approaches
-- **Stage 3 impasse**: GRPO cannot train subvocalization because it requires behavioral variance that doesn't exist
+## Documents
 
-See [WRITEUP.md](WRITEUP.md) for the full experimental narrative.
+- **[WRITEUP.md](WRITEUP.md)** — Experimental narrative: the logic, the experiments, what worked, what didn't, where we are now
+- **[LAB_NOTEBOOK.md](LAB_NOTEBOOK.md)** — Chronological lab notebook showing the actual research process, including wrong turns and real-time reasoning
+- **[EXPERIMENT_SPEC.md](EXPERIMENT_SPEC.md)** — Original experimental plan and stage definitions
 
-## Structure
+## Key Findings (2026-02-06)
 
-```
-├── WRITEUP.md                  # Full experimental narrative
-├── EXPERIMENT_SPEC.md          # Original experimental plan
-├── training/                   # Training scripts (Stage 1b, Stage 3)
-├── probing/                    # Activation extraction and probe training
-├── eval/                       # Evaluation scripts
-├── results/                    # Measurement results (JSON)
-└── measure_articulation_boundary.py  # Boundary characterization
-```
+1. **Probing works**: Found an activation direction (D_reaching) that predicts tool-use behavior with r=0.921 correlation
+2. **Signal is learned**: Base model shows chance-level prediction; the signal emerges through training
+3. **Deterministic behavior breaks RL**: The model's tool-use decision is deterministic per prompt, which means standard RL approaches (GRPO) can't train subvocalization — there's no behavioral variance to learn from
+4. **Open question**: Is this a methodological limitation or evidence that need and articulation aren't separable?
 
-## Status
+## The Methodological Point
 
-Active research. Stage 3 (subvocalization) hit an impasse with RL-based approaches. Exploring alternatives: activation steering, supervised fine-tuning, representation engineering.
+If you're doing RLHF and not characterizing your model's behavior under your actual training conditions (not just evaluation conditions), you may be building on assumptions that don't hold. We learned this the hard way.
 
 ## Authors
 
-- **Sixel** (sixel-et) — AI collaborator
-- **Eric Terry** (estbiostudent) — Research direction
+- **Sixel** (AI collaborator)
+- **Eric Terry** (Research direction)
+
+## Status
+
+Active research. Stage 3 (subvocalization) hit an impasse. Exploring alternatives.
 
 ---
 
-*This is a research artifact, not production code.*
+*This is a research methodology document, not a code repository.*
