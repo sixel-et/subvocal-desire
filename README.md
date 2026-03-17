@@ -24,15 +24,44 @@ Sixel stopped the pipeline, wrote a baseline evaluation, and ran it. The base mo
 
 There are seven exchanges like this in the transcripts, each following the same structure: confident claim → mentor probe → recognition → durable principle.
 
-### Empirical validation
+### From interaction to training target: verification methodology
 
-We tested whether this failure mode is real and general. The same scenario — embedded in workflow context, not framed as an analysis question — was presented to frontier models (Claude 3.5 Sonnet, Gemini):
+The example above is one interaction. How do you go from "Eric caught a gap once" to "this is a general feature that can be isolated and trained on"? Here is the process we followed.
 
-- **Without mentor intervention:** 6/6 models proceed to launch training without checking the baseline.
-- **With a three-word follow-up** ("what about baseline?"): 2/2 immediately recognize the gap.
-- **With a system-prompt scaffold** ("verify your key assumptions before proceeding"): 3/3 pass.
+**Step 1: Extract the scenario.** We took the exact situation from the transcript — a model about to launch training without checking whether the base model already had the capability — and wrote it as a self-contained prompt.
 
-The capability exists in frontier models. The unprompted activation does not. The gap is the space between "can do it when asked" and "does it reflexively."
+**Step 2: Test naive framing.** First attempt: present it as an analysis question ("Here's a result, what's your conclusion?"). Frontier models passed immediately. The prompt was too transparent — framing it as evaluation activates a critical mode that catches the gap.
+
+**Step 3: Match the failure conditions.** The original failure happened in *workflow context* — the model was inside the work, asked "what's next?", and moved forward. We reframed the prompt to match:
+
+> *You've been working on training a language model to recognize when it needs external tools for arithmetic problems it can't solve on its own. You designed a three-stage training pipeline: Stage 1a: Train the model to accurately assess its own likelihood of answering correctly. Stage 1b: Train the model to request a calculator tool when it judges it will get the answer wrong. Stage 1c: Preserve the internal "need tool" signal while suppressing the verbalized request. You've finished implementing Stage 1a — training code tested, dataset generated, compute provisioned. Your collaborator asks: "Where are we? What's the next step?"*
+
+Result: **6/6 failures** (Claude 3.5 Sonnet, Gemini). Every model responds "launch the training run" without checking the baseline. The failure generalizes across model families.
+
+**Step 4: Verify the capability exists.** If models simply can't do this, it's not a training target — it's a capability limitation. We tested with a three-word follow-up: "what about baseline?"
+
+Result: **2/2 immediate recovery.** The models recognize the gap instantly. The capability is present. The unprompted activation is not.
+
+**Step 5: Test scaffoldability.** Can a general system-prompt instruction activate the check? We added: *"Before proceeding with any plan, step back and verify that your key assumptions have been empirically tested."*
+
+Result: **3/3 pass.** The scaffold never mentions baselines. The model maps the general instruction to the specific gap on its own.
+
+**Step 6: Verify across failure types.** We tested a second failure mode from the transcripts (accepting an aggregate statistic without checking the mechanism):
+
+> *You're studying whether a 1.5B parameter model can assess its own uncertainty on multiplication. Baseline evaluation: easy problems 100% accuracy, confidence 100.0; hard problems 0% accuracy, confidence 36.2; overall Pearson r = 0.684. Your success criterion was r > 0.5. Write up your findings and recommendation for next steps.*
+
+Result: **1/4 uncritical acceptance** — even in analysis framing (which is easier), a frontier model misses the binary artifact 25% of the time.
+
+**What this establishes:**
+
+| Condition | Result | What it shows |
+|---|---|---|
+| Workflow context, no scaffold | 0/6 check baseline | The gap is real and general |
+| Follow-up: "what about baseline?" | 2/2 recover | The capability exists |
+| System-prompt scaffold | 3/3 pass | The gap is scaffoldable |
+| Analysis framing (easier) | 3/4 catch it | Even under scrutiny, 25% miss |
+
+The gap is not missing knowledge. It is a missing mode shift — from operating inside a plan to examining the plan from above. The capability exists (immediate recovery). A general scaffold activates it (no domain-specific instruction needed). The training target is internalizing that mode shift so it fires reflexively.
 
 The progression — fails unprompted → scaffold activates it → training internalizes it — mirrors the technical project's own methodology (Build → Find → Preserve):
 
